@@ -2,14 +2,15 @@
 
 """
 
+import os.path
 try:
-    from PyQt5.QtCore import Qt, QRectF, pyqtSignal
+    from PyQt5.QtCore import Qt, QRectF, pyqtSignal, QT_VERSION_STR
     from PyQt5.QtGui import QImage, QPixmap, QPainterPath
-    from PyQt5.QtWidgets import QGraphicsView, QGraphicsScene
+    from PyQt5.QtWidgets import QGraphicsView, QGraphicsScene, QFileDialog
 except ImportError:
     try:
-        from PyQt4.QtCore import Qt, QRectF, pyqtSignal
-        from PyQt4.QtGui import QGraphicsView, QGraphicsScene, QImage, QPixmap, QPainterPath
+        from PyQt4.QtCore import Qt, QRectF, pyqtSignal, QT_VERSION_STR
+        from PyQt4.QtGui import QGraphicsView, QGraphicsScene, QImage, QPixmap, QPainterPath, QFileDialog
     except ImportError:
         raise ImportError("ImageViewerQt: Requires PyQt5 or PyQt4.")
 
@@ -120,6 +121,20 @@ class ImageViewerQt(QGraphicsView):
         self.setSceneRect(QRectF(pixmap.rect()))  # Set scene size to image size.
         self.updateViewer()
 
+    def loadImageFromFile(self, fileName=""):
+        """ Load an image from file.
+        Without any arguments, loadImageFromFile() will popup a file dialog to choose the image file.
+        With a fileName argument, loadImageFromFile(fileName) will attempt to load the specified image file directly.
+        """
+        if len(fileName) == 0:
+            if QT_VERSION_STR[0] == '4':
+                fileName = QFileDialog.getOpenFileName(self, "Open image file.")
+            elif QT_VERSION_STR[0] == '5':
+                fileName, dummy = QFileDialog.getOpenFileName(self, "Open image file.")
+        if len(fileName) and os.path.isfile(fileName):
+            image = QImage(fileName)
+            self.setImage(image)
+
     def updateViewer(self):
         """ Show current zoom (if showing entire image, apply current aspect ratio mode).
         """
@@ -186,12 +201,10 @@ class ImageViewerQt(QGraphicsView):
 if __name__ == '__main__':
     import sys
     try:
-        from PyQt5.QtCore import QT_VERSION_STR
-        from PyQt5.QtWidgets import QApplication, QFileDialog
+        from PyQt5.QtWidgets import QApplication
     except ImportError:
         try:
-            from PyQt4.QtCore import QT_VERSION_STR
-            from PyQt4.QtGui import QApplication, QFileDialog
+            from PyQt4.QtGui import QApplication
         except ImportError:
             raise ImportError("ImageViewerQt: Requires PyQt5 or PyQt4.")
     print('ImageViewerQt: Using Qt ' + QT_VERSION_STR)
@@ -204,17 +217,9 @@ if __name__ == '__main__':
     # Create the application.
     app = QApplication(sys.argv)
 
-    # Load image file.
-    if QT_VERSION_STR[0] == '4':
-        fileName = QFileDialog.getOpenFileName(None, "Open image file...")
-    elif QT_VERSION_STR[0] == '5':
-        fileName, dummy = QFileDialog.getOpenFileName(None, "Open image file...")
-    print("Loading image " + fileName)
-    image = QImage(fileName)
-
-    # Create image viewer and set to display image.
+    # Create image viewer and load an image file to display.
     viewer = ImageViewerQt()
-    viewer.setImage(image)
+    viewer.loadImageFromFile()  # Pops up file dialog.
 
     # Handle left mouse clicks with custom slot.
     viewer.leftMouseButtonPressed.connect(handleLeftClick)
