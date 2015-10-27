@@ -1,4 +1,4 @@
-# ImageViewerQt
+# ImageViewerPyQt
 
 Yet another [PyQt](https://www.riverbankcomputing.com/software/pyqt/intro) (version 4 or 5) image viewer widget. Comes prepackaged with several configurable options for display (aspect ratio, scroll bars) and mouse interaction (zoom, pan, click signals).
 
