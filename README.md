@@ -20,11 +20,6 @@ Everything's in `ImageViewerQt.py`. Just put it somewhere where your project can
 
 * [PyQt](https://www.riverbankcomputing.com/software/pyqt/intro) (version 4 or 5)
 
-On Mac OS X you can install Qt4 and PyQt4 via [Homebrew](http://brew.sh) as shown below:
-
-    brew install qt
-    brew install pyqt
-
 ## A Simple Example
 
 ```python
