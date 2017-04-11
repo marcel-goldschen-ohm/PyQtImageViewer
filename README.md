@@ -5,7 +5,7 @@ Yet another [PyQt](https://www.riverbankcomputing.com/software/pyqt/intro) (vers
 Displays a *QImage* or *QPixmap*. To display any other image format, you must first convert it to a *QImage* or *QPixmap*. Some useful image format conversion utilities:
 
 * [qimage2ndarray](https://github.com/hmeine/qimage2ndarray): [NumPy](http://www.numpy.org) *ndarray* <==> *QImage*
-* [ImageQt] (https://github.com/python-pillow/Pillow/blob/master/PIL/ImageQt.py): [PIL] (https://github.com/python-pillow/Pillow) *Image* <==> *QImage*
+* [ImageQt](https://github.com/python-pillow/Pillow/blob/master/PIL/ImageQt.py): [PIL](https://github.com/python-pillow/Pillow) *Image* <==> *QImage*
 
 **Author**: Marcel Goldschen-Ohm  
 **Email**:  <marcel.goldschen@gmail.com>  
