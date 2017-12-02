@@ -1,4 +1,4 @@
-""" ImageViewer.py: PyQt image viewer widget for a QPixmap in a QGraphicsView scene with mouse zooming and panning.
+""" QtImageViewer.py: PyQt image viewer widget for a QPixmap in a QGraphicsView scene with mouse zooming and panning.
 
 """
 
@@ -19,7 +19,7 @@ __author__ = "Marcel Goldschen-Ohm <marcel.goldschen@gmail.com>"
 __version__ = '0.9.0'
 
 
-class ImageViewerQt(QGraphicsView):
+class QtImageViewer(QGraphicsView):
     """ PyQt image viewer widget for a QPixmap in a QGraphicsView scene with mouse zooming and panning.
 
     Displays a QImage or QPixmap (QImage is internally converted to a QPixmap).
@@ -207,7 +207,7 @@ if __name__ == '__main__':
             from PyQt4.QtGui import QApplication
         except ImportError:
             raise ImportError("ImageViewerQt: Requires PyQt5 or PyQt4.")
-    print('ImageViewerQt: Using Qt ' + QT_VERSION_STR)
+    print('Using Qt ' + QT_VERSION_STR)
 
     def handleLeftClick(x, y):
         row = int(y)
@@ -218,7 +218,7 @@ if __name__ == '__main__':
     app = QApplication(sys.argv)
 
     # Create image viewer and load an image file to display.
-    viewer = ImageViewerQt()
+    viewer = QtImageViewer()
     viewer.loadImageFromFile()  # Pops up file dialog.
 
     # Handle left mouse clicks with custom slot.

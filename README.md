@@ -1,4 +1,4 @@
-# ImageViewerPyQt
+# PyQtImageViewer
 
 Yet another [PyQt](https://www.riverbankcomputing.com/software/pyqt/intro) (version 4 or 5) image viewer widget. Comes prepackaged with several configurable options for display (aspect ratio, scroll bars) and mouse interaction (zoom, pan, click signals).
 
@@ -14,7 +14,7 @@ Copyright (c) 2015 Marcel Goldschen-Ohm
 
 ## INSTALL
 
-Everything's in `ImageViewerQt.py`. Just put it somewhere where your project can find it.
+Everything's in `QtImageViewer.py`. Just put it somewhere where your project can find it.
 
 ### Requires:
 
@@ -34,7 +34,7 @@ except ImportError:
         from PyQt4.QtGui import QImage, QApplication, QFileDialog
     except ImportError:
         raise ImportError("Requires PyQt5 or PyQt4.")
-from ImageViewerQt import ImageViewerQt
+from QtImageViewer import QtImageViewer
 
 
 # Custom slot for handling mouse clicks in our viewer.
@@ -51,7 +51,7 @@ if __name__ == '__main__':
     app = QApplication(sys.argv)
         
     # Create an image viewer widget.
-    viewer = ImageViewerQt()
+    viewer = QtImageViewer()
         
     # Set viewer's aspect ratio mode.
     # !!! ONLY applies to full image view.
