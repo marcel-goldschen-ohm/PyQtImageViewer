@@ -12,7 +12,7 @@ except ImportError:
         from PyQt4.QtCore import Qt, QRectF, pyqtSignal, QT_VERSION_STR
         from PyQt4.QtGui import QGraphicsView, QGraphicsScene, QImage, QPixmap, QPainterPath, QFileDialog
     except ImportError:
-        raise ImportError("ImageViewerQt: Requires PyQt5 or PyQt4.")
+        raise ImportError("QtImageViewer: Requires PyQt5 or PyQt4.")
 
 
 __author__ = "Marcel Goldschen-Ohm <marcel.goldschen@gmail.com>"
@@ -206,7 +206,7 @@ if __name__ == '__main__':
         try:
             from PyQt4.QtGui import QApplication
         except ImportError:
-            raise ImportError("ImageViewerQt: Requires PyQt5 or PyQt4.")
+            raise ImportError("QtImageViewer: Requires PyQt5 or PyQt4.")
     print('Using Qt ' + QT_VERSION_STR)
 
     def handleLeftClick(x, y):
