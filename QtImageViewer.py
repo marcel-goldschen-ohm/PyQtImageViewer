@@ -52,70 +52,6 @@ __author__ = "Marcel Goldschen-Ohm <marcel.goldschen@gmail.com>"
 __version__ = '2.0.0'
 
 
-class EllipseROI(QGraphicsEllipseItem):
-
-    def __init__(self, viewer):
-        QGraphicsItem.__init__(self)
-        self._viewer = viewer
-        pen = QPen(Qt.yellow)
-        pen.setCosmetic(True)
-        self.setPen(pen)
-        self.setFlags(self.ItemIsSelectable)
-
-    def mousePressEvent(self, event):
-        QGraphicsItem.mousePressEvent(self, event)
-        if event.button() == Qt.LeftButton:
-            self._viewer.roiClicked(self)
-
-
-class RectROI(QGraphicsRectItem):
-
-    def __init__(self, viewer):
-        QGraphicsItem.__init__(self)
-        self._viewer = viewer
-        pen = QPen(Qt.yellow)
-        pen.setCosmetic(True)
-        self.setPen(pen)
-        self.setFlags(self.ItemIsSelectable)
-
-    def mousePressEvent(self, event):
-        QGraphicsItem.mousePressEvent(self, event)
-        if event.button() == Qt.LeftButton:
-            self._viewer.roiClicked(self)
-
-
-class LineROI(QGraphicsLineItem):
-
-    def __init__(self, viewer):
-        QGraphicsItem.__init__(self)
-        self._viewer = viewer
-        pen = QPen(Qt.yellow)
-        pen.setCosmetic(True)
-        self.setPen(pen)
-        self.setFlags(self.ItemIsSelectable)
-
-    def mousePressEvent(self, event):
-        QGraphicsItem.mousePressEvent(self, event)
-        if event.button() == Qt.LeftButton:
-            self._viewer.roiClicked(self)
-
-
-class PolygonROI(QGraphicsPolygonItem):
-
-    def __init__(self, viewer):
-        QGraphicsItem.__init__(self)
-        self._viewer = viewer
-        pen = QPen(Qt.yellow)
-        pen.setCosmetic(True)
-        self.setPen(pen)
-        self.setFlags(self.ItemIsSelectable)
-
-    def mousePressEvent(self, event):
-        QGraphicsItem.mousePressEvent(self, event)
-        if event.button() == Qt.LeftButton:
-            self._viewer.roiClicked(self)
-
-
 class QtImageViewer(QGraphicsView):
     """ PyQt image viewer widget based on QGraphicsView with mouse zooming/panning and ROIs.
 
@@ -589,6 +525,71 @@ class QtImageViewer(QGraphicsView):
             spot.setRect(x - radius, y - radius, 2 * radius, 2 * radius)
             self.scene.addItem(spot)
             self.ROIs.append(spot)
+
+
+
+class EllipseROI(QGraphicsEllipseItem):
+
+    def __init__(self, viewer):
+        QGraphicsItem.__init__(self)
+        self._viewer = viewer
+        pen = QPen(Qt.yellow)
+        pen.setCosmetic(True)
+        self.setPen(pen)
+        self.setFlags(self.ItemIsSelectable)
+
+    def mousePressEvent(self, event):
+        QGraphicsItem.mousePressEvent(self, event)
+        if event.button() == Qt.LeftButton:
+            self._viewer.roiClicked(self)
+
+
+class RectROI(QGraphicsRectItem):
+
+    def __init__(self, viewer):
+        QGraphicsItem.__init__(self)
+        self._viewer = viewer
+        pen = QPen(Qt.yellow)
+        pen.setCosmetic(True)
+        self.setPen(pen)
+        self.setFlags(self.ItemIsSelectable)
+
+    def mousePressEvent(self, event):
+        QGraphicsItem.mousePressEvent(self, event)
+        if event.button() == Qt.LeftButton:
+            self._viewer.roiClicked(self)
+
+
+class LineROI(QGraphicsLineItem):
+
+    def __init__(self, viewer):
+        QGraphicsItem.__init__(self)
+        self._viewer = viewer
+        pen = QPen(Qt.yellow)
+        pen.setCosmetic(True)
+        self.setPen(pen)
+        self.setFlags(self.ItemIsSelectable)
+
+    def mousePressEvent(self, event):
+        QGraphicsItem.mousePressEvent(self, event)
+        if event.button() == Qt.LeftButton:
+            self._viewer.roiClicked(self)
+
+
+class PolygonROI(QGraphicsPolygonItem):
+
+    def __init__(self, viewer):
+        QGraphicsItem.__init__(self)
+        self._viewer = viewer
+        pen = QPen(Qt.yellow)
+        pen.setCosmetic(True)
+        self.setPen(pen)
+        self.setFlags(self.ItemIsSelectable)
+
+    def mousePressEvent(self, event):
+        QGraphicsItem.mousePressEvent(self, event)
+        if event.button() == Qt.LeftButton:
+            self._viewer.roiClicked(self)
 
 
 if __name__ == '__main__':
