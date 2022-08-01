@@ -2,7 +2,7 @@
 
 Yet another [PyQt](https://www.riverbankcomputing.com/software/pyqt/intro) (version 5) image viewer widget. Comes prepackaged with several configurable options for display (aspect ratio, scroll bars) and mouse interaction (zoom, pan, click signals). Also has limited support for ROIs.
 
-Displays a *QImage*, *QPixmap*, or *NumPy 2D array* (later requires [qimage2ndarray](https://github.com/hmeine/qimage2ndarray)). To display any other image format, you must first convert it to one of the supported formats. Some useful image format conversion utilities:
+Displays a *QImage*, *QPixmap*, or *NumPy 2D array* (requires [qimage2ndarray](https://github.com/hmeine/qimage2ndarray)). To display any other image format, you must first convert it to one of the supported formats. Some useful image format conversion utilities:
 
 * [qimage2ndarray](https://github.com/hmeine/qimage2ndarray): [NumPy](http://www.numpy.org) *ndarray* <==> *QImage*
 * [ImageQt](https://github.com/python-pillow/Pillow/blob/master/PIL/ImageQt.py): [PIL](https://github.com/python-pillow/Pillow) *Image* <==> *QImage*
