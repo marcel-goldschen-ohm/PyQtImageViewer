@@ -169,6 +169,7 @@ class QtImageViewer(QGraphicsView):
     viewChanged = pyqtSignal()
 
     # Emitted on mouse motion.
+    # Emits mouse position over image in image pixel coordinates.
     # !!! setMouseTracking(True) if you want to use this at all times.
     mousePositionOnImageChanged = pyqtSignal(QPoint)
 
