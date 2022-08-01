@@ -230,12 +230,12 @@ class QtImageViewer(QGraphicsView):
         self.setSceneRect(QRectF(pixmap.rect()))  # Set scene size to image size.
         self.updateViewer()
 
-    def loadImageFromFile(self, filepath=""):
+    def open(self, filepath=None):
         """ Load an image from file.
         Without any arguments, loadImageFromFile() will pop up a file dialog to choose the image file.
         With a fileName argument, loadImageFromFile(fileName) will attempt to load the specified image file directly.
         """
-        if len(filepath) == 0:
+        if filepath is None:
             filepath, dummy = QFileDialog.getOpenFileName(self, "Open image file.")
         if len(filepath) and os.path.isfile(filepath):
             image = QImage(filepath)
@@ -527,7 +527,6 @@ class QtImageViewer(QGraphicsView):
             self.ROIs.append(spot)
 
 
-
 class EllipseROI(QGraphicsEllipseItem):
 
     def __init__(self, viewer):
@@ -607,9 +606,12 @@ if __name__ == '__main__':
     # Create the application.
     app = QApplication(sys.argv)
 
-    # Create image viewer and load an image file to display.
+    # Create image viewer.
     viewer = QtImageViewer()
-    viewer.loadImageFromFile("spots.tif")  # Pops up file dialog.
+
+    # Display an image from file.
+    # By not specifying a file path a file dialog will be presented.
+    viewer.open()
 
     # Handle left mouse clicks with custom slot.
     viewer.leftMouseButtonReleased.connect(handleLeftClick)
