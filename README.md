@@ -87,6 +87,8 @@ if __name__ == '__main__':
     image = QImage(fileName)
     
     # Display the image in the viewer.
+    # If you have numpy and qimage2ndarray installed, you could
+    # directly input a NumPy 2D array to setImage().
     viewer.setImage(image)
     
     # Handle left mouse clicks with your own custom slot
