@@ -1,37 +1,30 @@
 # PyQtImageViewer
 
-Yet another [PyQt](https://www.riverbankcomputing.com/software/pyqt/intro) (version 5) image viewer widget. Comes prepackaged with several configurable options for display (aspect ratio, scroll bars) and mouse interaction (zoom, pan, click signals). Also has limited support for ROIs.
-
-Displays a *QImage*, *QPixmap*, or *NumPy 2D array* (requires [qimage2ndarray](https://github.com/hmeine/qimage2ndarray)). To display any other image format, you must first convert it to one of the supported formats. Some useful image format conversion utilities:
-
-* [qimage2ndarray](https://github.com/hmeine/qimage2ndarray): [NumPy](http://www.numpy.org) *ndarray* <==> *QImage*
-* [ImageQt](https://github.com/python-pillow/Pillow/blob/master/PIL/ImageQt.py): [PIL](https://github.com/python-pillow/Pillow) *Image* <==> *QImage*
+* `QtImageViewer`: Yet another [PyQt5](https://www.riverbankcomputing.com/software/pyqt/intro) image viewer widget. Comes prepackaged with several easily configurable options for display (aspect ratio, scroll bars) and mouse interaction (zoom, pan, click signals). Also has limited support for ROIs. Displays a *QImage*, *QPixmap*, or *NumPy 2D array* (requires [qimage2ndarray](https://github.com/hmeine/qimage2ndarray)). To display any other image format, you must first convert it to one of the supported formats (e.g., see [PIL](https://github.com/python-pillow/Pillow) and [ImageQt](https://github.com/python-pillow/Pillow/blob/master/PIL/ImageQt.py)).
+* `QtImageStackViewer`: Multi-page image stack viewer similar to [ImageJ](https://imagej.nih.gov/ij/). Based off of QtImageViewer with sliders for traversing frames and/or channels and a titlebar that displays the current frame in the stack and mouse position coordinates like in ImageJ.
 
 **Author**: Marcel Goldschen-Ohm  
 **Email**:  <marcel.goldschen@gmail.com>  
 **License**: MIT  
-Copyright (c) 2015 Marcel Goldschen-Ohm  
+Copyright (c) 2022 Marcel Goldschen-Ohm  
 
-## INSTALL
+# INSTALL
 
-Everything's in `QtImageViewer.py`. Just put it somewhere where your project can find it.
+Everything's in `QtImageViewer.py` and `QtImageStackViewer.py`. Just put these somewhere where your project can find them.
 
-### Requires:
+### Requirements:
 
-* [PyQt](https://www.riverbankcomputing.com/software/pyqt/intro) (version 5)
-
-If you want to display NumPy 2D arrays:
-
+* [PyQt5](https://www.riverbankcomputing.com/software/pyqt/intro)
 * [NumPy](https://numpy.org/)
 * [qimage2ndarray](https://github.com/hmeine/qimage2ndarray)
+* [Pillow](https://python-pillow.org)
 
-## A Simple Example
+## `QtImageViewer` Example
 
 ```python
 import sys
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QImage
-from PyQt5.QtWidgets import QApplication, QFileDialog
+from PyQt5.QtWidgets import QApplication
 from QtImageViewer import QtImageViewer
 
 
@@ -82,14 +75,8 @@ if __name__ == '__main__':
     # Allow panning with the middle mouse button.
     viewer.panButton = Qt.MiddleButton  # set to None to disable
         
-    # Load an image to be displayed.
-    fileName, dummy = QFileDialog.getOpenFileName(None, "Open image file...")
-    image = QImage(fileName)
-    
-    # Display the image in the viewer.
-    # If you have numpy and qimage2ndarray installed, you could
-    # directly input a NumPy 2D array to setImage().
-    viewer.setImage(image)
+    # Load an image file to be displayed (will popup a file dialog).
+    viewer.open()
     
     # Handle left mouse clicks with your own custom slot
     # handleLeftClick(x, y). (x, y) are image coordinates.
