@@ -1,52 +1,37 @@
 """ QtImageViewer.py: PyQt image viewer widget based on QGraphicsView with mouse zooming/panning and ROIs.
 
-Image:
-------
-Use the setImage(im) method to set the image in the viewer.
-    - im can be a QImage, QPixmap, or NumPy 2D array (the later requires the package qimage2ndarray).
-    For display in the QGraphicsView the image will be converted to a QPixmap.
-
-Some useful image format conversion utilities:
-    qimage2ndarray: NumPy ndarray <==> QImage    (https://github.com/hmeine/qimage2ndarray)
-    ImageQt: PIL Image <==> QImage  (https://github.com/python-pillow/Pillow/blob/master/PIL/ImageQt.py)
-
-Mouse:
-------
-Mouse interactions for zooming and panning is fully customizable by simply setting the desired button interactions:
-e.g.,
-    regionZoomButton = Qt.LeftButton  # Drag a zoom box.
-    zoomOutButton = Qt.RightButton  # Pop end of zoom stack (double click clears zoom stack).
-    panButton = Qt.MiddleButton  # Drag to pan.
-    wheelZoomFactor = 1.25  # Set to None or 1 to disable mouse wheel zoom.
-
-To disable any interaction, just disable its button.
-e.g., to disable panning:
-    panButton = None
-
-ROIs:
------
-Can also add ellipse, rectangle, line, and polygon ROIs to the image.
-ROIs should be derived from the provided EllipseROI, RectROI, LineROI, and PolygonROI classes.
-ROIs are selectable and optionally moveable with the mouse (see setROIsAreMovable).
-
-TODO: Add support for editing the displayed image contrast.
-TODO: Add support for drawing ROIs with the mouse.
 """
 
 import os.path
-from PyQt5.QtCore import Qt, QRectF, QPoint, QPointF, pyqtSignal, QEvent, QSize
-from PyQt5.QtGui import QImage, QPixmap, QPainterPath, QMouseEvent, QPainter, QPen
-from PyQt5.QtWidgets import QGraphicsView, QGraphicsScene, QFileDialog, QSizePolicy, \
-    QGraphicsItem, QGraphicsEllipseItem, QGraphicsRectItem, QGraphicsLineItem, QGraphicsPolygonItem
+
+try:
+    from PyQt6.QtCore import Qt, QRectF, QPoint, QPointF, pyqtSignal, QEvent, QSize
+    from PyQt6.QtGui import QImage, QPixmap, QPainterPath, QMouseEvent, QPainter, QPen
+    from PyQt6.QtWidgets import QGraphicsView, QGraphicsScene, QFileDialog, QSizePolicy, \
+        QGraphicsItem, QGraphicsEllipseItem, QGraphicsRectItem, QGraphicsLineItem, QGraphicsPolygonItem
+except ImportError:
+    try:
+        from PyQt5.QtCore import Qt, QRectF, QPoint, QPointF, pyqtSignal, QEvent, QSize
+        from PyQt5.QtGui import QImage, QPixmap, QPainterPath, QMouseEvent, QPainter, QPen
+        from PyQt5.QtWidgets import QGraphicsView, QGraphicsScene, QFileDialog, QSizePolicy, \
+            QGraphicsItem, QGraphicsEllipseItem, QGraphicsRectItem, QGraphicsLineItem, QGraphicsPolygonItem
+    except ImportError:
+        raise ImportError("Requires PyQt (version 5 or 6)")
+
+# numpy is optional: only needed if you want to display numpy 2d arrays as images.
 try:
     import numpy as np
 except ImportError:
     np = None
+
+# qimage2ndarray is optional: useful for displaying numpy 2d arrays as images.
+# !!! qimage2ndarray requires PyQt5.
+#     Some custom code in the viewer appears to handle the conversion from numpy 2d arrays,
+#     so qimage2ndarray probably is not needed anymore. I've left it here just in case.
 try:
     import qimage2ndarray
 except ImportError:
     qimage2ndarray = None
-
 
 __author__ = "Marcel Goldschen-Ohm <marcel.goldschen@gmail.com>"
 __version__ = '2.0.0'
@@ -55,9 +40,14 @@ __version__ = '2.0.0'
 class QtImageViewer(QGraphicsView):
     """ PyQt image viewer widget based on QGraphicsView with mouse zooming/panning and ROIs.
 
+    Image File:
+    -----------
+    Use the open("path/to/file") method to load an image file into the viewer.
+    Calling open() without a file argument will popup a file selection dialog.
+
     Image:
     ------
-    Use the setImage(im) method to set the image in the viewer.
+    Use the setImage(im) method to set the image data in the viewer.
         - im can be a QImage, QPixmap, or NumPy 2D array (the later requires the package qimage2ndarray).
         For display in the QGraphicsView the image will be converted to a QPixmap.
 
@@ -129,21 +119,21 @@ class QtImageViewer(QGraphicsView):
         #   Qt.IgnoreAspectRatio: Scale image to fit viewport.
         #   Qt.KeepAspectRatio: Scale image to fit inside viewport, preserving aspect ratio.
         #   Qt.KeepAspectRatioByExpanding: Scale image to fill the viewport, preserving aspect ratio.
-        self.aspectRatioMode = Qt.KeepAspectRatio
+        self.aspectRatioMode = Qt.AspectRatioMode.KeepAspectRatio
 
         # Scroll bar behaviour.
         #   Qt.ScrollBarAlwaysOff: Never shows a scroll bar.
         #   Qt.ScrollBarAlwaysOn: Always shows a scroll bar.
         #   Qt.ScrollBarAsNeeded: Shows a scroll bar only when zoomed.
-        self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 
         # Interactions (set buttons to None to disable interactions)
         # !!! Events handled by interactions will NOT emit *MouseButton* signals.
         #     Note: regionZoomButton will still emit a *MouseButtonReleased signal on a click (i.e. tiny box).
-        self.regionZoomButton = Qt.LeftButton  # Drag a zoom box.
-        self.zoomOutButton = Qt.RightButton  # Pop end of zoom stack (double click clears zoom stack).
-        self.panButton = Qt.MiddleButton  # Drag to pan.
+        self.regionZoomButton = Qt.MouseButton.LeftButton  # Drag a zoom box.
+        self.zoomOutButton = Qt.MouseButton.RightButton  # Pop end of zoom stack (double click clears zoom stack).
+        self.panButton = Qt.MouseButton.MiddleButton  # Drag to pan.
         self.wheelZoomFactor = 1.25  # Set to None or 1 to disable mouse wheel zoom.
 
         # Stack of QRectF zoom boxes in scene coordinates.
@@ -167,7 +157,7 @@ class QtImageViewer(QGraphicsView):
         # # For drawing ROIs.
         # self.drawROI = None
 
-        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
 
     def sizeHint(self):
         return QSize(900, 600)
@@ -209,12 +199,22 @@ class QtImageViewer(QGraphicsView):
             pixmap = image
         elif type(image) is QImage:
             pixmap = QPixmap.fromImage(image)
-        elif (np is not None) and (type(image) is np.ndarray) and (qimage2ndarray is not None):
-            qimage = qimage2ndarray.array2qimage(image, True)
-            pixmap = QPixmap.fromImage(qimage)
-        elif (type(image) is str) and os.path.isfile(image):
-            qimage = QImage(image)
-            pixmap = QPixmap.fromImage(qimage)
+        elif (np is not None) and (type(image) is np.ndarray):
+            if qimage2ndarray is not None:
+                qimage = qimage2ndarray.array2qimage(image, True)
+                pixmap = QPixmap.fromImage(qimage)
+            else:
+                image = image.astype(np.float32)
+                image -= image.min()
+                image /= image.max()
+                image *= 255
+                image[image > 255] = 255
+                image[image < 0] = 0
+                image = image.astype(np.uint8)
+                height, width = image.shape
+                bytes = image.tobytes()
+                qimage = QImage(bytes, width, height, QImage.Format.Format_Grayscale8)
+                pixmap = QPixmap.fromImage(qimage)
         else:
             raise RuntimeError("ImageViewer.setImage: Argument must be a QImage, QPixmap, or numpy.ndarray.")
         if self.hasImage():
@@ -266,7 +266,8 @@ class QtImageViewer(QGraphicsView):
         """ Start mouse pan or zoom mode.
         """
         # Ignore dummy events. e.g., Faking pan with left button ScrollHandDrag.
-        dummyModifiers = Qt.KeyboardModifier(Qt.ShiftModifier | Qt.ControlModifier | Qt.AltModifier | Qt.MetaModifier)
+        dummyModifiers = Qt.KeyboardModifier(Qt.KeyboardModifier.ShiftModifier | Qt.KeyboardModifier.ControlModifier
+                                             | Qt.KeyboardModifier.AltModifier | Qt.KeyboardModifier.MetaModifier)
         if event.modifiers() == dummyModifiers:
             QGraphicsView.mousePressEvent(self, event)
             event.accept()
@@ -290,7 +291,7 @@ class QtImageViewer(QGraphicsView):
         # Start dragging a region zoom box?
         if (self.regionZoomButton is not None) and (event.button() == self.regionZoomButton):
             self._pixelPosition = event.pos()  # store pixel position
-            self.setDragMode(QGraphicsView.RubberBandDrag)
+            self.setDragMode(QGraphicsView.DragMode.RubberBandDrag)
             QGraphicsView.mousePressEvent(self, event)
             event.accept()
             self._isZooming = True
@@ -307,17 +308,19 @@ class QtImageViewer(QGraphicsView):
         # Start dragging to pan?
         if (self.panButton is not None) and (event.button() == self.panButton):
             self._pixelPosition = event.pos()  # store pixel position
-            self.setDragMode(QGraphicsView.ScrollHandDrag)
-            if self.panButton == Qt.LeftButton:
+            self.setDragMode(QGraphicsView.DragMode.ScrollHandDrag)
+            if self.panButton == Qt.MouseButton.LeftButton:
                 QGraphicsView.mousePressEvent(self, event)
             else:
                 # ScrollHandDrag ONLY works with LeftButton, so fake it.
                 # Use a bunch of dummy modifiers to notify that event should NOT be handled as usual.
-                self.viewport().setCursor(Qt.ClosedHandCursor)
-                dummyModifiers = Qt.KeyboardModifier(Qt.ShiftModifier | Qt.ControlModifier | Qt.AltModifier
-                                                     | Qt.MetaModifier)
-                dummyEvent = QMouseEvent(QEvent.MouseButtonPress, event.pos(), Qt.LeftButton, event.buttons(),
-                                         dummyModifiers)
+                self.viewport().setCursor(Qt.CursorShape.ClosedHandCursor)
+                dummyModifiers = Qt.KeyboardModifier(Qt.KeyboardModifier.ShiftModifier
+                                                     | Qt.KeyboardModifier.ControlModifier
+                                                     | Qt.KeyboardModifier.AltModifier
+                                                     | Qt.KeyboardModifier.MetaModifier)
+                dummyEvent = QMouseEvent(QEvent.Type.MouseButtonPress, QPointF(event.pos()), Qt.MouseButton.LeftButton,
+                                         event.buttons(), dummyModifiers)
                 self.mousePressEvent(dummyEvent)
             sceneViewport = self.mapToScene(self.viewport().rect()).boundingRect().intersected(self.sceneRect())
             self._scenePosition = sceneViewport.topLeft()
@@ -326,11 +329,11 @@ class QtImageViewer(QGraphicsView):
             return
 
         scenePos = self.mapToScene(event.pos())
-        if event.button() == Qt.LeftButton:
+        if event.button() == Qt.MouseButton.LeftButton:
             self.leftMouseButtonPressed.emit(scenePos.x(), scenePos.y())
-        elif event.button() == Qt.MiddleButton:
+        elif event.button() == Qt.MouseButton.MiddleButton:
             self.middleMouseButtonPressed.emit(scenePos.x(), scenePos.y())
-        elif event.button() == Qt.RightButton:
+        elif event.button() == Qt.MouseButton.RightButton:
             self.rightMouseButtonPressed.emit(scenePos.x(), scenePos.y())
 
         QGraphicsView.mousePressEvent(self, event)
@@ -339,7 +342,8 @@ class QtImageViewer(QGraphicsView):
         """ Stop mouse pan or zoom mode (apply zoom if valid).
         """
         # Ignore dummy events. e.g., Faking pan with left button ScrollHandDrag.
-        dummyModifiers = Qt.KeyboardModifier(Qt.ShiftModifier | Qt.ControlModifier | Qt.AltModifier | Qt.MetaModifier)
+        dummyModifiers = Qt.KeyboardModifier(Qt.KeyboardModifier.ShiftModifier | Qt.KeyboardModifier.ControlModifier
+                                             | Qt.KeyboardModifier.AltModifier | Qt.KeyboardModifier.MetaModifier)
         if event.modifiers() == dummyModifiers:
             QGraphicsView.mouseReleaseEvent(self, event)
             event.accept()
@@ -351,7 +355,7 @@ class QtImageViewer(QGraphicsView):
             zoomRect = self.scene.selectionArea().boundingRect().intersected(self.sceneRect())
             # Clear current selection area (i.e. rubberband rect).
             self.scene.setSelectionArea(QPainterPath())
-            self.setDragMode(QGraphicsView.NoDrag)
+            self.setDragMode(QGraphicsView.DragMode.NoDrag)
             # If zoom box is 3x3 screen pixels or smaller, do not zoom and proceed to process as a click release.
             zoomPixelWidth = abs(event.pos().x() - self._pixelPosition.x())
             zoomPixelHeight = abs(event.pos().y() - self._pixelPosition.y())
@@ -366,18 +370,20 @@ class QtImageViewer(QGraphicsView):
 
         # Finish panning?
         if (self.panButton is not None) and (event.button() == self.panButton):
-            if self.panButton == Qt.LeftButton:
+            if self.panButton == Qt.MouseButton.LeftButton:
                 QGraphicsView.mouseReleaseEvent(self, event)
             else:
                 # ScrollHandDrag ONLY works with LeftButton, so fake it.
                 # Use a bunch of dummy modifiers to notify that event should NOT be handled as usual.
-                self.viewport().setCursor(Qt.ArrowCursor)
-                dummyModifiers = Qt.KeyboardModifier(Qt.ShiftModifier | Qt.ControlModifier | Qt.AltModifier
-                                                     | Qt.MetaModifier)
-                dummyEvent = QMouseEvent(QEvent.MouseButtonRelease, event.pos(), Qt.LeftButton, event.buttons(),
-                                         dummyModifiers)
+                self.viewport().setCursor(Qt.CursorShape.ArrowCursor)
+                dummyModifiers = Qt.KeyboardModifier(Qt.KeyboardModifier.ShiftModifier
+                                                     | Qt.KeyboardModifier.ControlModifier
+                                                     | Qt.KeyboardModifier.AltModifier
+                                                     | Qt.KeyboardModifier.MetaModifier)
+                dummyEvent = QMouseEvent(QEvent.Type.MouseButtonRelease, QPointF(event.pos()),
+                                         Qt.MouseButton.LeftButton, event.buttons(), dummyModifiers)
                 self.mouseReleaseEvent(dummyEvent)
-            self.setDragMode(QGraphicsView.NoDrag)
+            self.setDragMode(QGraphicsView.DragMode.NoDrag)
             if len(self.zoomStack) > 0:
                 sceneViewport = self.mapToScene(self.viewport().rect()).boundingRect().intersected(self.sceneRect())
                 delta = sceneViewport.topLeft() - self._scenePosition
@@ -389,11 +395,11 @@ class QtImageViewer(QGraphicsView):
             return
 
         scenePos = self.mapToScene(event.pos())
-        if event.button() == Qt.LeftButton:
+        if event.button() == Qt.MouseButton.LeftButton:
             self.leftMouseButtonReleased.emit(scenePos.x(), scenePos.y())
-        elif event.button() == Qt.MiddleButton:
+        elif event.button() == Qt.MouseButton.MiddleButton:
             self.middleMouseButtonReleased.emit(scenePos.x(), scenePos.y())
-        elif event.button() == Qt.RightButton:
+        elif event.button() == Qt.MouseButton.RightButton:
             self.rightMouseButtonReleased.emit(scenePos.x(), scenePos.y())
 
         QGraphicsView.mouseReleaseEvent(self, event)
@@ -408,9 +414,9 @@ class QtImageViewer(QGraphicsView):
             return
 
         scenePos = self.mapToScene(event.pos())
-        if event.button() == Qt.LeftButton:
+        if event.button() == Qt.MouseButton.LeftButton:
             self.leftMouseButtonDoubleClicked.emit(scenePos.x(), scenePos.y())
-        elif event.button() == Qt.RightButton:
+        elif event.button() == Qt.MouseButton.RightButton:
             self.rightMouseButtonDoubleClicked.emit(scenePos.x(), scenePos.y())
 
         QGraphicsView.mouseDoubleClickEvent(self, event)
@@ -482,10 +488,10 @@ class QtImageViewer(QGraphicsView):
         QGraphicsView.mouseMoveEvent(self, event)
 
     def enterEvent(self, event):
-        self.setCursor(Qt.CrossCursor)
+        self.setCursor(Qt.CursorShape.CrossCursor)
 
     def leaveEvent(self, event):
-        self.setCursor(Qt.ArrowCursor)
+        self.setCursor(Qt.CursorShape.ArrowCursor)
 
     def addROIs(self, rois):
         for roi in rois:
@@ -513,10 +519,10 @@ class QtImageViewer(QGraphicsView):
     def setROIsAreMovable(self, tf):
         if tf:
             for roi in self.ROIs:
-                roi.setFlags(roi.flags() | QGraphicsItem.ItemIsMovable)
+                roi.setFlags(roi.flags() | QGraphicsItem.GraphicsItemFlag.ItemIsMovable)
         else:
             for roi in self.ROIs:
-                roi.setFlags(roi.flags() & ~QGraphicsItem.ItemIsMovable)
+                roi.setFlags(roi.flags() & ~QGraphicsItem.GraphicsItemFlag.ItemIsMovable)
 
     def addSpots(self, xy, radius):
         for xy_ in xy:
@@ -535,11 +541,11 @@ class EllipseROI(QGraphicsEllipseItem):
         pen = QPen(Qt.yellow)
         pen.setCosmetic(True)
         self.setPen(pen)
-        self.setFlags(self.ItemIsSelectable)
+        self.setFlags(self.GraphicsItemFlag.ItemIsSelectable)
 
     def mousePressEvent(self, event):
         QGraphicsItem.mousePressEvent(self, event)
-        if event.button() == Qt.LeftButton:
+        if event.button() == Qt.MouseButton.LeftButton:
             self._viewer.roiClicked(self)
 
 
@@ -548,14 +554,14 @@ class RectROI(QGraphicsRectItem):
     def __init__(self, viewer):
         QGraphicsItem.__init__(self)
         self._viewer = viewer
-        pen = QPen(Qt.yellow)
+        pen = QPen(Qt.GlobalColor.yellow)
         pen.setCosmetic(True)
         self.setPen(pen)
-        self.setFlags(self.ItemIsSelectable)
+        self.setFlags(self.GraphicsItemFlag.ItemIsSelectable)
 
     def mousePressEvent(self, event):
         QGraphicsItem.mousePressEvent(self, event)
-        if event.button() == Qt.LeftButton:
+        if event.button() == Qt.MouseButton.LeftButton:
             self._viewer.roiClicked(self)
 
 
@@ -564,14 +570,14 @@ class LineROI(QGraphicsLineItem):
     def __init__(self, viewer):
         QGraphicsItem.__init__(self)
         self._viewer = viewer
-        pen = QPen(Qt.yellow)
+        pen = QPen(Qt.GlobalColor.yellow)
         pen.setCosmetic(True)
         self.setPen(pen)
-        self.setFlags(self.ItemIsSelectable)
+        self.setFlags(self.GraphicsItemFlag.ItemIsSelectable)
 
     def mousePressEvent(self, event):
         QGraphicsItem.mousePressEvent(self, event)
-        if event.button() == Qt.LeftButton:
+        if event.button() == Qt.MouseButton.LeftButton:
             self._viewer.roiClicked(self)
 
 
@@ -580,20 +586,23 @@ class PolygonROI(QGraphicsPolygonItem):
     def __init__(self, viewer):
         QGraphicsItem.__init__(self)
         self._viewer = viewer
-        pen = QPen(Qt.yellow)
+        pen = QPen(Qt.GlobalColor.yellow)
         pen.setCosmetic(True)
         self.setPen(pen)
-        self.setFlags(self.ItemIsSelectable)
+        self.setFlags(self.GraphicsItemFlag.ItemIsSelectable)
 
     def mousePressEvent(self, event):
         QGraphicsItem.mousePressEvent(self, event)
-        if event.button() == Qt.LeftButton:
+        if event.button() == Qt.MouseButton.LeftButton:
             self._viewer.roiClicked(self)
 
 
 if __name__ == '__main__':
     import sys
-    from PyQt5.QtWidgets import QApplication
+    try:
+        from PyQt6.QtWidgets import QApplication
+    except ImportError:
+        from PyQt5.QtWidgets import QApplication
 
     def handleLeftClick(x, y):
         row = int(y)
@@ -609,8 +618,7 @@ if __name__ == '__main__':
     # Create image viewer.
     viewer = QtImageViewer()
 
-    # Display an image from file.
-    # By not specifying a file path a file dialog will be presented.
+    # Open an image from file.
     viewer.open()
 
     # Handle left mouse clicks with custom slot.
@@ -618,4 +626,4 @@ if __name__ == '__main__':
 
     # Show viewer and run application.
     viewer.show()
-    sys.exit(app.exec_())
+    sys.exit(app.exec())

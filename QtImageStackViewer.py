@@ -5,9 +5,19 @@
 import numpy as np
 from PIL import Image
 import os.path
-from PyQt5.QtCore import Qt, QSize
-from PyQt5.QtGui import QImage, QPixmap
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QSizePolicy, QScrollBar, QToolBar, QLabel, QFileDialog, QStyle
+
+try:
+    from PyQt6.QtCore import Qt, QSize
+    from PyQt6.QtGui import QImage, QPixmap
+    from PyQt6.QtWidgets import QWidget, QVBoxLayout, QSizePolicy, QScrollBar, QToolBar, QLabel, QFileDialog, QStyle
+except ImportError:
+    try:
+        from PyQt5.QtCore import Qt, QSize
+        from PyQt5.QtGui import QImage, QPixmap
+        from PyQt5.QtWidgets import QWidget, QVBoxLayout, QSizePolicy, QScrollBar, QToolBar, QLabel, QFileDialog, QStyle
+    except ImportError:
+        raise ImportError("Requires PyQt (version 5 or 6)")
+
 from QtImageViewer import QtImageViewer
 
 
@@ -56,7 +66,7 @@ class QtImageStackViewer(QWidget):
 
         # QtImageViewer
         self.imageViewer = QtImageViewer()
-        self.imageViewer.setSizePolicy(QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding))
+        self.imageViewer.setSizePolicy(QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding))
 
         # Scrollbars for frames/channels/etc.
         self._scrollbars = []
@@ -69,10 +79,10 @@ class QtImageStackViewer(QWidget):
         font = self.label.font()
         font.setPointSize(10)
         self.label.setFont(font)
-        self.label.setSizePolicy(QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed))
+        self.label.setSizePolicy(QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed))
 
         self.toolbar = QToolBar()
-        self.toolbar.setOrientation(Qt.Horizontal)
+        self.toolbar.setOrientation(Qt.Orientation.Horizontal)
         self.toolbar.setFloatable(False)
         self.toolbar.setMovable(False)
         self.toolbar.setIconSize(QSize(10, 10))
@@ -83,13 +93,13 @@ class QtImageStackViewer(QWidget):
         bgColor = self.palette().color(QWidget.backgroundRole(self))
         isDarkMode = isDarkColor(bgColor)
 
-        qpixmapi = getattr(QStyle, "SP_MediaPlay")
+        qpixmapi = getattr(QStyle.StandardPixmap, "SP_MediaPlay")
         qicon = self.style().standardIcon(qpixmapi)
         if isDarkMode:
             invertIconColors(qicon, 10, 10)
         self.playAction = self.toolbar.addAction(qicon, "", self.play)
 
-        qpixmapi = getattr(QStyle, "SP_MediaPause")
+        qpixmapi = getattr(QStyle.StandardPixmap, "SP_MediaPause")
         qicon = self.style().standardIcon(qpixmapi)
         if isDarkMode:
             invertIconColors(qicon, 10, 10)
@@ -110,7 +120,7 @@ class QtImageStackViewer(QWidget):
 
         self.updateViewer()
 
-        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
 
     def image(self):
         return self._image
@@ -142,9 +152,11 @@ class QtImageStackViewer(QWidget):
                 self._image.seek(0)
                 firstFrame = np.array(self._image)
                 if n_channels == 1:
-                    data = np.zeros((self._image.height, self._image.width, n_frames), dtype=firstFrame.dtype)
+                    data = np.zeros((self._image.height, self._image.width, n_frames),
+                                    dtype=firstFrame.dtype)
                 else:
-                    data = np.zeros((self._image.height, self._image.width, n_channels, n_frames), dtype=firstFrame.dtype)
+                    data = np.zeros((self._image.height, self._image.width, n_channels, n_frames),
+                                    dtype=firstFrame.dtype)
                 data[:,:,:n_channels] = firstFrame
                 for i in range(1, n_frames):
                     self._image.seek(i)
@@ -203,7 +215,7 @@ class QtImageStackViewer(QWidget):
                 del self._scrollbars[n_scrollbars:]
             while len(self._scrollbars) < n_scrollbars:
                 scrollbar = QScrollBar(Qt.Horizontal)
-                scrollbar.setSizePolicy(QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed))
+                scrollbar.setSizePolicy(QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed))
                 scrollbar.valueChanged.connect(self.updateFrame)
                 self.layout().addWidget(scrollbar)
                 self._scrollbars.append(scrollbar)
@@ -225,8 +237,8 @@ class QtImageStackViewer(QWidget):
                     sb.deleteLater()
                 del self._scrollbars[n_scrollbars:]
             while len(self._scrollbars) < n_scrollbars:
-                scrollbar = QScrollBar(Qt.Horizontal)
-                scrollbar.setSizePolicy(QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed))
+                scrollbar = QScrollBar(Qt.Orientation.Horizontal)
+                scrollbar.setSizePolicy(QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed))
                 scrollbar.valueChanged.connect(self.updateFrame)
                 self.layout().addWidget(scrollbar)
                 self._scrollbars.append(scrollbar)
@@ -242,7 +254,7 @@ class QtImageStackViewer(QWidget):
         # mouse wheel scroll frames vs. zoom
         if len(self._scrollbars) > 0 and self._wheelScrollsFrame:
             # wheel scrolls frame (i.e., last dimension)
-            self.imageViewer.wheelZoomFactor = 1
+            self.imageViewer.wheelZoomFactor = None
         else:
             # wheel zoom
             self.imageViewer.wheelZoomFactor = self._wheelZoomFactor
@@ -318,14 +330,14 @@ class QtImageStackViewer(QWidget):
         if self._wheelScrollsFrame and n_frames > 1:
             i = self._scrollbars[-1].value()
             if event.angleDelta().y() < 0:
-                # prev frame
-                if i > 0:
-                    self._scrollbars[-1].setValue(i - 1)
-                    self.updateFrame()
-            else:
                 # next frame
                 if i < n_frames - 1:
                     self._scrollbars[-1].setValue(i + 1)
+                    self.updateFrame()
+            else:
+                # prev frame
+                if i > 0:
+                    self._scrollbars[-1].setValue(i - 1)
                     self.updateFrame()
             return
 
@@ -354,7 +366,10 @@ class QtImageStackViewer(QWidget):
 
 if __name__ == '__main__':
     import sys
-    from PyQt5.QtWidgets import QApplication
+    try:
+        from PyQt6.QtWidgets import QApplication
+    except ImportError:
+        from PyQt5.QtWidgets import QApplication
 
     # Create the application.
     app = QApplication(sys.argv)
@@ -369,4 +384,4 @@ if __name__ == '__main__':
 
     # Show viewer and run application.
     viewer.show()
-    sys.exit(app.exec_())
+    sys.exit(app.exec())
