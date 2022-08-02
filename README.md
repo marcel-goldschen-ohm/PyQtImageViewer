@@ -19,7 +19,7 @@ Everything's in `QtImageViewer.py` and `QtImageStackViewer.py`. Just put these s
 * [qimage2ndarray](https://github.com/hmeine/qimage2ndarray)
 * [Pillow](https://python-pillow.org)
 
-## `QtImageViewer` Example
+# `QtImageViewer` Basic Example
 
 ```python
 import sys
@@ -87,6 +87,35 @@ if __name__ == '__main__':
     # the leftMouseButtonPressed signal will not be emitted due to
     # left clicks being handled by the regionZoomButton.
     viewer.leftMouseButtonReleased.connect(handleLeftClick)
+        
+    # Show the viewer and run the application.
+    viewer.show()
+    sys.exit(app.exec_())
+```
+
+# `QtImageStackViewer` Basic Example
+
+```python
+import sys
+from PyQt5.QtWidgets import QApplication
+from QtImageStackViewer import QtImageStackViewer
+    
+
+if __name__ == '__main__':
+    # Create the QApplication.
+    app = QApplication(sys.argv)
+        
+    # Create an image stack viewer widget.
+    viewer = QtImageStackViewer()
+    
+    # Customize mouse interaction via the QtImageViewer widget.
+    viewer.imageViewer.regionZoomButton = Qt.LeftButton  # set to None to disable
+    viewer.imageViewer.zoomOutButton = Qt.RightButton  # set to None to disable
+    viewer.imageViewer.wheelZoomFactor = 1.25  # Set to None or 1 to disable
+    viewer.imageViewer.panButton = Qt.MiddleButton  # set to None to disable
+        
+    # Load an image file to be displayed (will popup a file dialog).
+    viewer.open()
         
     # Show the viewer and run the application.
     viewer.show()
