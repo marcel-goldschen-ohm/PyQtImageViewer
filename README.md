@@ -114,7 +114,7 @@ if __name__ == '__main__':
     viewer.imageViewer.wheelZoomFactor = 1.25  # Set to None or 1 to disable
     viewer.imageViewer.panButton = Qt.MiddleButton  # set to None to disable
         
-    # Load an image file to be displayed (will popup a file dialog).
+    # Load an image stack file to be displayed (will popup a file dialog).
     viewer.open()
         
     # Show the viewer and run the application.
