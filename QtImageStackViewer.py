@@ -9,12 +9,12 @@ import os.path
 try:
     from PyQt6.QtCore import Qt, QSize
     from PyQt6.QtGui import QImage, QPixmap
-    from PyQt6.QtWidgets import QWidget, QVBoxLayout, QSizePolicy, QScrollBar, QToolBar, QLabel, QFileDialog, QStyle
+    from PyQt6.QtWidgets import QApplication, QWidget, QVBoxLayout, QSizePolicy, QScrollBar, QToolBar, QLabel, QFileDialog, QStyle
 except ImportError:
     try:
         from PyQt5.QtCore import Qt, QSize
         from PyQt5.QtGui import QImage, QPixmap
-        from PyQt5.QtWidgets import QWidget, QVBoxLayout, QSizePolicy, QScrollBar, QToolBar, QLabel, QFileDialog, QStyle
+        from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QSizePolicy, QScrollBar, QToolBar, QLabel, QFileDialog, QStyle
     except ImportError:
         raise ImportError("Requires PyQt (version 5 or 6)")
 
@@ -56,7 +56,10 @@ class QtImageStackViewer(QWidget):
         QWidget.__init__(self)
 
         # Image data: NumPy array - OR - PIL image file object = PIL.Image.open(...)
-        self._image = image
+        if type(image) is str:
+            self._image = Image.open(image)
+        else:
+            self._image = image
 
         # Store data for current frame
         self._currentFrame = None
@@ -300,7 +303,7 @@ class QtImageStackViewer(QWidget):
 
         label = ""
         for sb in self._scrollbars:
-            label += str(sb.value()) + "/" + str(sb.maximum()) + "; "
+            label += str(sb.value() + 1) + "/" + str(sb.maximum() + 1) + "; "
         if type(self._image) is np.ndarray:
             width = self._image.shape[1]
             height = self._image.shape[0]
@@ -321,6 +324,14 @@ class QtImageStackViewer(QWidget):
                         # PIL Image file object = PIL.Image.open(...)
                         value = self._image.getpixel((x, y))
                     label += ", value=" + str(value)
+        if type(self._image) is not np.ndarray:
+            # PIL Image file object = PIL.Image.open(...)
+            try:
+                path, filename = os.path.split(self._image.filename)
+                if len(filename) > 0:
+                    label += "; " + filename
+            except:
+                pass
         self.label.setText(label)
 
     def wheelEvent(self, event):
