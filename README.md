@@ -80,7 +80,7 @@ if __name__ == '__main__':
     # Handle left mouse clicks with your own custom slot
     # handleLeftClick(x, y). (x, y) are image coordinates.
     # For (row, col) matrix indexing, row=y and col=x.
-    # ImageViewerQt also provides similar signals for
+    # QtImageViewer also provides similar signals for
     # left/right mouse button press, release and doubleclick.
     # Here I bind the slot to leftMouseButtonReleased only because
     # the leftMouseButtonPressed signal will not be emitted due to
