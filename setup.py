@@ -41,7 +41,6 @@ setup(
     ],
 
     ### Dependencies
-    # removed PyQt5 dependance for testing purposes.
 
     install_requires=[
         'numpy',
