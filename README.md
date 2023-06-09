@@ -9,16 +9,14 @@
 Copyright (c) 2022 Marcel Goldschen-Ohm  
 
 # INSTALL
+1. Ensure PyQt5 or PyQt6 is installed for your current enviroment.
+2. `pip install git+https://github.com/marcel-goldschen-ohm/PyQtImageViewer`
 
-Everything's in `QtImageViewer.py` and `QtImageStackViewer.py`. Just put these somewhere where your project can find them.
-
-Additionally, QtImageViewer.py can be installed using the following pip command.
-
-`pip install git+https://github.com/marcel-goldschen-ohm/PyQtImageViewer`
+Everything required to run this package can also be found in `QtImageViewer.py` and `QtImageStackViewer.py`. Just put these somewhere where your project can find them.
 
 ### Requirements:
 
-* [PyQt6 or PyQt5](https://www.riverbankcomputing.com/software/pyqt/intro)
+* [PyQt6 or PyQt5](https://www.riverbankcomputing.com/software/pyqt/intro) - Not included in setup.py requirements due to macOS/Linux install issues for Apple Silicon Devices
 * [NumPy](https://numpy.org/)
 * [Pillow](https://python-pillow.org)
 
