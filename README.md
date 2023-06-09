@@ -13,6 +13,7 @@ Copyright (c) 2022 Marcel Goldschen-Ohm
 Everything's in `QtImageViewer.py` and `QtImageStackViewer.py`. Just put these somewhere where your project can find them.
 
 Additionally, QtImageViewer.py can be installed using the following pip command.
+
 `pip install git+https://github.com/marcel-goldschen-ohm/PyQtImageViewer`
 
 ### Requirements:
