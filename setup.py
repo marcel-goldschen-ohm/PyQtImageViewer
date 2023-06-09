@@ -43,7 +43,6 @@ setup(
     ### Dependencies
 
     install_requires=[
-        'PyQt5',
         'numpy',
         'Pillow',
     ],
