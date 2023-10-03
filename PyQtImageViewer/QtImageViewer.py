@@ -102,8 +102,8 @@ class QtImageViewer(QGraphicsView):
     # Emit index of selected ROI
     roiSelected = pyqtSignal(int)
 
-    def __init__(self):
-        QGraphicsView.__init__(self)
+    def __init__(self, parent=None):
+        QGraphicsView.__init__(self, parent)
 
         # Image is displayed as a QPixmap in a QGraphicsScene attached to this QGraphicsView.
         self.scene = QGraphicsScene()
