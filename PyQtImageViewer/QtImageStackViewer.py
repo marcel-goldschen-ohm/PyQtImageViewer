@@ -217,13 +217,13 @@ class QtImageStackViewer(QWidget):
                     sb.deleteLater()
                 del self._scrollbars[n_scrollbars:]
             while len(self._scrollbars) < n_scrollbars:
-                scrollbar = QScrollBar(Qt.Horizontal)
+                scrollbar = QScrollBar(Qt.Orientation.Horizontal)
                 scrollbar.setSizePolicy(QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed))
                 scrollbar.valueChanged.connect(self.updateFrame)
                 self.layout().addWidget(scrollbar)
                 self._scrollbars.append(scrollbar)
             for i in range(n_scrollbars):
-                self._scrollbars[i].setRange(0, self._image.shape[i+2])
+                self._scrollbars[i].setRange(0, self._image.shape[i+2]-1)
                 self._scrollbars[i].setValue(0)
         else:
             # PIL Image file object = PIL.Image.open(...)
@@ -271,9 +271,10 @@ class QtImageStackViewer(QWidget):
         if type(self._image) is np.ndarray:
             rows = np.arange(self._image.shape[0])
             cols = np.arange(self._image.shape[1])
-            indexes = [rows, cols].extend([[i] for i in self.currentIndexes()])
+            indexes = [rows, cols]
+            indexes.extend([[i] for i in self.currentIndexes()])
             self._currentFrame = self._image[np.ix_(*indexes)]
-            self.imageViewer.setImage(self._currentFrame.copy())
+            self.imageViewer.setImage(self._currentFrame.copy()[:,:,0])
         else:
             # PIL Image file object = PIL.Image.open(...)
             channels = self._image.getbands()
